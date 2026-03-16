@@ -273,10 +273,10 @@ document.getElementById('addActivity').addEventListener('click', () => {
     const color = getRandomColor();
 
     item.innerHTML = `
-        <button class="remove-activity" onclick="removeActivity(this)" title="Remove">✕</button>
         <div class="activity-header-row">
             <input type="text" class="activity-name" placeholder="Activity Name" onchange="updateDependencyDropdowns()">
             <input type="color" class="activity-color activity-color-swatch" value="${color}" title="Color">
+            <button class="remove-activity" onclick="removeActivity(this)" title="Remove">✕</button>
         </div>
         <div class="activity-fields">
             <div class="form-group">
@@ -777,10 +777,10 @@ function restoreProjectData(data) {
         item.className = 'activity-item';
         item.dataset.id = id;
         item.innerHTML = `
-            <button class="remove-activity" onclick="removeActivity(this)" title="Remove">✕</button>
             <div class="activity-header-row">
                 <input type="text" class="activity-name" placeholder="Activity Name" value="${escapeHtml(act.name || '')}" onchange="updateDependencyDropdowns()">
                 <input type="color" class="activity-color activity-color-swatch" value="${escapeHtml(act.color || '#667eea')}" title="Color">
+                <button class="remove-activity" onclick="removeActivity(this)" title="Remove">✕</button>
             </div>
             <div class="activity-fields">
                 <div class="form-group">

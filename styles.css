@@ -172,7 +172,6 @@ select:focus {
 }
 
 .activity-item {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -183,11 +182,11 @@ select:focus {
     transition: background 0.3s, border-color 0.3s;
 }
 
-/* Name + color on one row */
+/* Name + color + remove on one row */
 .activity-header-row {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px;
     align-items: center;
 }
 
@@ -369,9 +368,6 @@ body.dark .holiday-tag {
 .btn-secondary:hover { background: #5a6268; }
 
 .remove-activity {
-    position: absolute;
-    top: 6px;
-    right: 6px;
     background: none;
     color: var(--text-muted);
     border: none;
@@ -382,6 +378,7 @@ body.dark .holiday-tag {
     padding: 2px 5px;
     transition: color 0.2s, background 0.2s;
     width: auto !important;
+    flex-shrink: 0;
 }
 
 .remove-activity:hover { color: #dc3545; background: rgba(220, 53, 69, 0.1); }
