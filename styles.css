@@ -434,15 +434,25 @@ body.dark .holiday-tag {
     color: #F1F5F9;
 }
 
-/* Primary — Indigo */
+/* Primary — dark slate, reads as "execute/run" */
 .btn-primary {
-    background: var(--accent);
-    color: #fff;
+    background: #1E293B;
+    color: #F8FAFC;
 }
 
 .btn-primary:hover {
-    background: var(--accent-hover);
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent);
+    background: #0F172A;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.3);
+}
+
+body.dark .btn-primary {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+body.dark .btn-primary:hover {
+    background: #E2E8F0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Secondary — ghost style */
@@ -489,73 +499,6 @@ body.dark .remove-activity:hover {
 }
 
 .project-actions .btn { flex: 1; }
-
-/* Save — subtle green tint, not garish */
-.btn-save {
-    background: #F0FDF4;
-    color: #15803D;
-    border: 1px solid #BBF7D0;
-}
-
-.btn-save:hover {
-    background: #DCFCE7;
-    box-shadow: 0 2px 6px rgba(21,128,61,0.2);
-}
-
-body.dark .btn-save {
-    background: #052E16;
-    color: #4ADE80;
-    border-color: #14532D;
-}
-
-body.dark .btn-save:hover {
-    background: #14532D;
-}
-
-/* Load — subtle blue tint */
-.btn-load {
-    background: #EFF6FF;
-    color: #1D4ED8;
-    border: 1px solid #BFDBFE;
-    cursor: pointer;
-}
-
-.btn-load:hover {
-    background: #DBEAFE;
-    box-shadow: 0 2px 6px rgba(29,78,216,0.2);
-}
-
-body.dark .btn-load {
-    background: #0C1A3A;
-    color: #93C5FD;
-    border-color: #1E3A5F;
-}
-
-body.dark .btn-load:hover {
-    background: #1E3A5F;
-}
-
-/* Export — subtle amber tint */
-.btn-export {
-    background: #FFFBEB;
-    color: #B45309;
-    border: 1px solid #FDE68A;
-}
-
-.btn-export:hover {
-    background: #FEF3C7;
-    box-shadow: 0 2px 6px rgba(180,83,9,0.2);
-}
-
-body.dark .btn-export {
-    background: #1C1000;
-    color: #FCD34D;
-    border-color: #3A2500;
-}
-
-body.dark .btn-export:hover {
-    background: #3A2500;
-}
 
 /* -----------------------------------------------------------------------
    Preview section header
