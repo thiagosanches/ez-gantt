@@ -191,7 +191,7 @@ select:focus {
     align-items: center;
 }
 
-.activity-item input,
+.activity-item input:not([type="color"]),
 .activity-item select {
     width: 100%;
 }
