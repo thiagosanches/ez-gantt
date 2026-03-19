@@ -644,11 +644,36 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             .attr('y1', 0).attr('y2', 0)
             .style('stroke', axisStroke);
 
+        // If the project doesn't start on a Monday the first (partial) week is W0;
+        // full weeks start at W1. Monday = getDay() 1.
+        const startsOnMonday = minDate.getDay() === 1;
+
         const weeks = d3.timeWeek.range(minDate, maxDate);
-        weeks.forEach((w, idx) => {
+        // d3.timeWeek starts on Sunday — nudge to Monday-aligned weeks
+        const mondayWeeks = weeks.map(w => {
+            const m = new Date(w);
+            // d3 timeWeek gives Sunday; shift forward 1 day to Monday
+            m.setDate(m.getDate() + 1);
+            return m;
+        }).filter(m => m >= minDate && m < maxDate);
+
+        // Draw the partial first week (before the first Monday) if project starts mid-week
+        if (!startsOnMonday) {
+            const x1 = xScale(minDate);
+            const x2 = mondayWeeks.length > 0 ? xScale(mondayWeeks[0]) : width;
+            weekAxis.append('line')
+                .attr('x1', x1).attr('x2', x1).attr('y1', 0).attr('y2', 5)
+                .style('stroke', axisStroke);
+            weekAxis.append('text')
+                .attr('x', (x1 + x2) / 2).attr('y', 17).attr('text-anchor', 'middle')
+                .style('font-size', '11px').style('fill', axisText)
+                .text('W0');
+        }
+
+        mondayWeeks.forEach((w, idx) => {
             const x1 = xScale(w);
-            const x2 = idx + 1 < weeks.length
-                ? xScale(weeks[idx + 1])
+            const x2 = idx + 1 < mondayWeeks.length
+                ? xScale(mondayWeeks[idx + 1])
                 : width;
             weekAxis.append('line')
                 .attr('x1', x1).attr('x2', x1).attr('y1', 0).attr('y2', 5)
@@ -712,6 +737,9 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             .attr('y1', 0).attr('y2', 0)
             .style('stroke', axisStroke);
 
+        // If the project doesn't start on a Monday the first (partial) week is W0.
+        const startsOnMonday = minDate.getDay() === 1;
+
         weekGroups.forEach((wg, idx) => {
             const x1 = wg.startIdx * dayWidth;
             const nextIdx = idx + 1 < weekGroups.length ? weekGroups[idx + 1].startIdx : slotList.length;
@@ -721,10 +749,11 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 .attr('x1', x1).attr('x2', x1).attr('y1', 0).attr('y2', 5)
                 .style('stroke', axisStroke);
 
+            const label = (!startsOnMonday && idx === 0) ? 'W0' : `W${startsOnMonday ? idx + 1 : idx}`;
             weekAxisG.append('text')
                 .attr('x', (x1 + x2) / 2).attr('y', 17).attr('text-anchor', 'middle')
                 .style('font-size', '11px').style('fill', axisText)
-                .text(`W${idx + 1}`);
+                .text(label);
         });
 
         // Month row: group weekday slots by month
