@@ -50,10 +50,10 @@
     --header-subtext:     #7dbce8;
 
     /* Form sidebar */
-    --form-bg:            #f0f0f0;
-    --form-border:        #d8d8d8;
-    --bg-form-item:       #f0f0f0;
-    --bg-form-item-border:#d8d8d8;
+    --form-bg:            #e6e5ea;
+    --form-border:        #cccbd2;
+    --bg-form-item:       #e6e5ea;
+    --bg-form-item-border:#cccbd2;
 }
 
 /* -----------------------------------------------------------------------
