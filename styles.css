@@ -11,17 +11,15 @@
     /* Surfaces */
     --bg-body:            #edf4fb;
     --bg-container:       #ffffff;
-    --bg-form-item:       #f4f9fd;
-    --bg-form-item-border:#c6dcec;
     --bg-chart:           #ffffff;
-    --bg-input:           #ffffff;
 
-    /* Text */
+    /* Text (chart / right side) */
     --text-primary:       #082b45;
     --text-secondary:     #0967aa;
     --text-muted:         #5a90b8;
 
-    /* Borders & focus */
+    /* Inputs (chart / right side) */
+    --bg-input:           #ffffff;
     --border-input:       #b0d0e8;
     --border-input-focus: #0095ff;
 
@@ -50,6 +48,23 @@
     --header-border:      #051c2e;
     --header-text:        #e8f4fd;
     --header-subtext:     #7dbce8;
+
+    /* Form sidebar — dark panel in light mode */
+    --form-bg:            #0d2e4a;
+    --form-border:        #1a4d6e;
+    --form-text-primary:  #e8f4fd;
+    --form-text-secondary:#7dbce8;
+    --form-text-muted:    #4a8aad;
+    --form-input-bg:      #082338;
+    --form-input-border:  #1a4d6e;
+    --form-card-bg:       #0a2540;
+    --form-card-border:   #1a4d6e;
+    --form-divider:       #1a4d6e;
+    --form-accent-subtle: #051c2e;
+
+    /* Legacy alias so .bg-form-item-border still works for toggle btn */
+    --bg-form-item:       #0d2e4a;
+    --bg-form-item-border:#1a4d6e;
 }
 
 /* -----------------------------------------------------------------------
@@ -58,8 +73,6 @@
 body.dark {
     --bg-body:            #030d14;
     --bg-container:       #061724;
-    --bg-form-item:       #0a2135;
-    --bg-form-item-border:#133352;
     --bg-chart:           #061724;
     --bg-input:           #0d2a42;
 
@@ -91,6 +104,22 @@ body.dark {
     --header-border:      #0a2135;
     --header-text:        #e8f4fd;
     --header-subtext:     #4a7fa8;
+
+    /* Form sidebar — even deeper in dark mode */
+    --form-bg:            #020b11;
+    --form-border:        #0e2e47;
+    --form-text-primary:  #e8f4fd;
+    --form-text-secondary:#7dbce8;
+    --form-text-muted:    #3d7090;
+    --form-input-bg:      #061724;
+    --form-input-border:  #0e2e47;
+    --form-card-bg:       #040f1a;
+    --form-card-border:   #0e2e47;
+    --form-divider:       #0e2e47;
+    --form-accent-subtle: #030d14;
+
+    --bg-form-item:       #020b11;
+    --bg-form-item-border:#0e2e47;
 }
 
 /* -----------------------------------------------------------------------
@@ -191,10 +220,132 @@ header p {
     overflow-x: hidden;
     min-height: 0;
     padding: 20px 18px;
-    border-right: 1px solid var(--bg-form-item-border);
-    background: var(--bg-form-item);
+    border-right: 1px solid var(--form-border);
+    background: var(--form-bg);
     transition: background 0.3s, border-color 0.3s;
     min-width: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Form section — scoped overrides for dark sidebar context
+   ----------------------------------------------------------------------- */
+
+/* Headings */
+.form-section h2,
+.form-section .section-label {
+    color: var(--form-text-muted);
+    border-bottom-color: var(--form-divider);
+}
+
+/* All labels inside the sidebar */
+.form-section label:not(.btn):not(.toggle-label) {
+    color: var(--form-text-muted);
+}
+
+/* Inputs and selects */
+.form-section input[type="text"],
+.form-section input[type="date"],
+.form-section input[type="number"],
+.form-section select {
+    background: var(--form-input-bg);
+    border-color: var(--form-input-border);
+    color: var(--form-text-primary);
+}
+
+.form-section input[type="text"]:focus,
+.form-section input[type="date"]:focus,
+.form-section input[type="number"]:focus,
+.form-section select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,149,255,0.18);
+}
+
+/* Color swatch border */
+.form-section .activity-color-swatch {
+    border-color: var(--form-input-border);
+    background: var(--form-input-bg);
+}
+
+/* Secondary buttons — light ghost on dark background */
+.form-section .btn-secondary {
+    background: transparent;
+    color: var(--form-text-secondary);
+    border-color: var(--form-input-border);
+}
+
+.form-section .btn-secondary:hover {
+    background: rgba(0,149,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Primary button — bright accent on dark bg */
+.form-section .btn-primary {
+    background: var(--accent);
+    color: #e8f4fd;
+}
+
+.form-section .btn-primary:hover {
+    background: #29aaff;
+    box-shadow: 0 2px 8px rgba(0,149,255,0.4);
+}
+
+/* Activity cards */
+.form-section .activity-item {
+    background: var(--form-card-bg);
+    border-color: var(--form-card-border);
+}
+
+.form-section .activity-item:hover {
+    border-color: var(--accent);
+}
+
+/* Remove activity button */
+.form-section .remove-activity {
+    color: var(--form-text-muted);
+}
+
+.form-section .remove-activity:hover {
+    color: #f08080;
+    background: rgba(240,128,128,0.1);
+}
+
+/* FTE hint */
+.form-section .fte-hint {
+    color: #7dbce8;
+}
+
+/* Holidays widget */
+.form-section .holidays-section {
+    background: var(--form-card-bg);
+    border-color: var(--form-card-border);
+}
+
+.form-section .holidays-section summary {
+    color: var(--form-text-secondary);
+}
+
+.form-section .holidays-section[open] summary {
+    border-bottom-color: var(--form-divider);
+}
+
+.form-section .holidays-empty {
+    color: var(--form-text-muted);
+}
+
+/* Instructions widget */
+.form-section .instructions {
+    background: var(--form-accent-subtle);
+    border-left-color: var(--accent);
+}
+
+.form-section .instructions li {
+    color: var(--form-text-secondary);
+}
+
+/* Autosave */
+.form-section .autosave-status {
+    color: var(--form-text-muted);
 }
 
 /* -----------------------------------------------------------------------
