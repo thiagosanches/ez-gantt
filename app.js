@@ -3,6 +3,8 @@ let activityIdCounter = 1;
 let ganttChart = null;
 let holidays = []; // [{ date: 'YYYY-MM-DD', label: 'Holiday name' }]
 let showWeekends = false; // default: weekends are hidden
+let showWeeks   = true;   // default: week row visible
+let showMonths  = true;   // default: month row visible
 let autosaveTimer = null;
 
 // ---------------------------------------------------------------------------
@@ -68,6 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
         showWeekends = e.target.checked;
         scheduleSave();
         // Re-render if a chart already exists
+        if (ganttChart) document.getElementById('generateTimeline').click();
+    });
+
+    document.getElementById('showWeeks').addEventListener('change', (e) => {
+        showWeeks = e.target.checked;
+        scheduleSave();
+        if (ganttChart) document.getElementById('generateTimeline').click();
+    });
+
+    document.getElementById('showMonths').addEventListener('change', (e) => {
+        showMonths = e.target.checked;
+        scheduleSave();
         if (ganttChart) document.getElementById('generateTimeline').click();
     });
 
@@ -632,16 +646,11 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     // X axis with two header rows: WEEK row + MONTH row
     // ---------------------------------------------------------------------------
     const axisY = activities.length * 60;
-    const weekRowHeight = 24;   // height of the WEEK label row
-    const monthRowHeight = 24;  // height of the MONTH label row
+    const weekRowHeight  = showWeeks  ? 24 : 0;
+    const monthRowHeight = showMonths ? 24 : 0;
 
     if (!hideWeekends) {
         // --- Normal (show-weekends) mode ---
-        // Draw week ticks + labels (row 1)
-        const weekAxis = svg.append('g')
-            .attr('class', 'x-axis x-axis-weeks')
-            .attr('transform', `translate(0,${axisY})`);
-
         // If the project doesn't start on a Monday the first (partial) week is W0;
         // full weeks start at W1. Monday = getDay() 1.
         const startsOnMonday = minDate.getDay() === 1;
@@ -655,77 +664,91 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             return m;
         }).filter(m => m >= minDate && m < maxDate);
 
-        // Build a unified list of week segments for drawing (W0 + W1, W2…)
-        const weekSegments = [];
-        if (!startsOnMonday) {
-            weekSegments.push({
-                x1: xScale(minDate),
-                x2: mondayWeeks.length > 0 ? xScale(mondayWeeks[0]) : width,
-                label: 'W0',
-            });
-        }
-        mondayWeeks.forEach((w, idx) => {
-            weekSegments.push({
-                x1: xScale(w),
-                x2: idx + 1 < mondayWeeks.length ? xScale(mondayWeeks[idx + 1]) : width,
-                label: `W${idx + 1}`,
-            });
-        });
+        if (showWeeks) {
+            // Draw week row (row 1)
+            const weekAxis = svg.append('g')
+                .attr('class', 'x-axis x-axis-weeks')
+                .attr('transform', `translate(0,${axisY})`);
 
-        // Draw background bands (alternating) then divider lines then labels
-        weekSegments.forEach((seg, idx) => {
-            const bandFill = idx % 2 === 0 ? weekBandEven : weekBandOdd;
-            weekAxis.append('rect')
-                .attr('x', seg.x1).attr('y', 0)
-                .attr('width', seg.x2 - seg.x1).attr('height', weekRowHeight)
-                .attr('fill', bandFill);
-            // Left border line (full row height, weight 1.5px)
+            // Build a unified list of week segments for drawing (W0 + W1, W2…)
+            const weekSegments = [];
+            if (!startsOnMonday) {
+                weekSegments.push({
+                    x1: xScale(minDate),
+                    x2: mondayWeeks.length > 0 ? xScale(mondayWeeks[0]) : width,
+                    label: 'W0',
+                });
+            }
+            mondayWeeks.forEach((w, idx) => {
+                weekSegments.push({
+                    x1: xScale(w),
+                    x2: idx + 1 < mondayWeeks.length ? xScale(mondayWeeks[idx + 1]) : width,
+                    label: `W${idx + 1}`,
+                });
+            });
+
+            // Draw background bands (alternating) then divider lines then labels
+            weekSegments.forEach((seg, idx) => {
+                const bandFill = idx % 2 === 0 ? weekBandEven : weekBandOdd;
+                weekAxis.append('rect')
+                    .attr('x', seg.x1).attr('y', 0)
+                    .attr('width', seg.x2 - seg.x1).attr('height', weekRowHeight)
+                    .attr('fill', bandFill);
+                // Left border line (full row height, weight 1.5px)
+                weekAxis.append('line')
+                    .attr('x1', seg.x1).attr('x2', seg.x1)
+                    .attr('y1', 0).attr('y2', weekRowHeight)
+                    .style('stroke', axisStroke).style('stroke-width', 1.5);
+                weekAxis.append('text')
+                    .attr('x', (seg.x1 + seg.x2) / 2).attr('y', weekRowHeight / 2)
+                    .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                    .style('font-size', '11px').style('font-weight', '600').style('fill', axisText)
+                    .text(seg.label);
+            });
+            // Closing right border
             weekAxis.append('line')
-                .attr('x1', seg.x1).attr('x2', seg.x1)
+                .attr('x1', width).attr('x2', width)
                 .attr('y1', 0).attr('y2', weekRowHeight)
                 .style('stroke', axisStroke).style('stroke-width', 1.5);
-            weekAxis.append('text')
-                .attr('x', (seg.x1 + seg.x2) / 2).attr('y', weekRowHeight / 2)
-                .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-                .style('font-size', '11px').style('font-weight', '600').style('fill', axisText)
-                .text(seg.label);
-        });
-        // Closing right border
-        weekAxis.append('line')
-            .attr('x1', width).attr('x2', width)
-            .attr('y1', 0).attr('y2', weekRowHeight)
-            .style('stroke', axisStroke).style('stroke-width', 1.5);
-        // Bottom border
-        weekAxis.append('line')
-            .attr('x1', 0).attr('x2', width)
-            .attr('y1', weekRowHeight).attr('y2', weekRowHeight)
-            .style('stroke', axisStroke).style('stroke-width', 1.5);
+            // Top border
+            weekAxis.append('line')
+                .attr('x1', 0).attr('x2', width)
+                .attr('y1', 0).attr('y2', 0)
+                .style('stroke', axisStroke).style('stroke-width', 1.5);
+            // Bottom border
+            weekAxis.append('line')
+                .attr('x1', 0).attr('x2', width)
+                .attr('y1', weekRowHeight).attr('y2', weekRowHeight)
+                .style('stroke', axisStroke).style('stroke-width', 1.5);
+        }
 
-        // Draw month bands (row 2)
-        const monthAxis = svg.append('g')
-            .attr('class', 'x-axis x-axis-months')
-            .attr('transform', `translate(0,${axisY + weekRowHeight})`);
+        if (showMonths) {
+            // Draw month bands (row 2)
+            const monthAxis = svg.append('g')
+                .attr('class', 'x-axis x-axis-months')
+                .attr('transform', `translate(0,${axisY + weekRowHeight})`);
 
-        const months = d3.timeMonth.range(d3.timeMonth.floor(minDate), maxDate);
-        months.forEach((m, idx) => {
-            const mStart = Math.max(xScale(m), 0);
-            const mEnd = idx + 1 < months.length
-                ? Math.min(xScale(months[idx + 1]), width)
-                : width;
-            const mWidth = mEnd - mStart;
+            const months = d3.timeMonth.range(d3.timeMonth.floor(minDate), maxDate);
+            months.forEach((m, idx) => {
+                const mStart = Math.max(xScale(m), 0);
+                const mEnd = idx + 1 < months.length
+                    ? Math.min(xScale(months[idx + 1]), width)
+                    : width;
+                const mWidth = mEnd - mStart;
 
-            monthAxis.append('rect')
-                .attr('x', mStart).attr('y', 0)
-                .attr('width', mWidth).attr('height', monthRowHeight)
-                .attr('fill', accentSubtle)
-                .attr('stroke', axisStroke).attr('stroke-width', 1.5);
+                monthAxis.append('rect')
+                    .attr('x', mStart).attr('y', 0)
+                    .attr('width', mWidth).attr('height', monthRowHeight)
+                    .attr('fill', accentSubtle)
+                    .attr('stroke', axisStroke).attr('stroke-width', 1.5);
 
-            monthAxis.append('text')
-                .attr('x', mStart + mWidth / 2).attr('y', monthRowHeight / 2)
-                .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-                .style('font-size', '11px').style('font-weight', '700').style('fill', axisText)
-                .text(d3.timeFormat('%B %Y')(m));
-        });
+                monthAxis.append('text')
+                    .attr('x', mStart + mWidth / 2).attr('y', monthRowHeight / 2)
+                    .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                    .style('font-size', '11px').style('font-weight', '700').style('fill', axisText)
+                    .text(d3.timeFormat('%B %Y')(m));
+            });
+        }
 
     } else {
         // --- Hide-weekends (compressed) mode ---
@@ -745,78 +768,86 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             }
         });
 
-        const weekAxisG = svg.append('g')
-            .attr('class', 'x-axis x-axis-weeks')
-            .attr('transform', `translate(0,${axisY})`);
-
         // If the project doesn't start on a Monday the first (partial) week is W0.
         const startsOnMonday = minDate.getDay() === 1;
 
-        weekGroups.forEach((wg, idx) => {
-            const x1 = wg.startIdx * dayWidth;
-            const nextIdx = idx + 1 < weekGroups.length ? weekGroups[idx + 1].startIdx : slotList.length;
-            const x2 = nextIdx * dayWidth;
+        if (showWeeks) {
+            const weekAxisG = svg.append('g')
+                .attr('class', 'x-axis x-axis-weeks')
+                .attr('transform', `translate(0,${axisY})`);
 
-            const bandFill = idx % 2 === 0 ? weekBandEven : weekBandOdd;
-            weekAxisG.append('rect')
-                .attr('x', x1).attr('y', 0)
-                .attr('width', x2 - x1).attr('height', weekRowHeight)
-                .attr('fill', bandFill);
+            weekGroups.forEach((wg, idx) => {
+                const x1 = wg.startIdx * dayWidth;
+                const nextIdx = idx + 1 < weekGroups.length ? weekGroups[idx + 1].startIdx : slotList.length;
+                const x2 = nextIdx * dayWidth;
+
+                const bandFill = idx % 2 === 0 ? weekBandEven : weekBandOdd;
+                weekAxisG.append('rect')
+                    .attr('x', x1).attr('y', 0)
+                    .attr('width', x2 - x1).attr('height', weekRowHeight)
+                    .attr('fill', bandFill);
+                weekAxisG.append('line')
+                    .attr('x1', x1).attr('x2', x1)
+                    .attr('y1', 0).attr('y2', weekRowHeight)
+                    .style('stroke', axisStroke).style('stroke-width', 1.5);
+
+                const label = (!startsOnMonday && idx === 0) ? 'W0' : `W${startsOnMonday ? idx + 1 : idx}`;
+                weekAxisG.append('text')
+                    .attr('x', (x1 + x2) / 2).attr('y', weekRowHeight / 2)
+                    .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                    .style('font-size', '11px').style('font-weight', '600').style('fill', axisText)
+                    .text(label);
+            });
+            // Closing right border + top + bottom border
             weekAxisG.append('line')
-                .attr('x1', x1).attr('x2', x1)
+                .attr('x1', width).attr('x2', width)
                 .attr('y1', 0).attr('y2', weekRowHeight)
                 .style('stroke', axisStroke).style('stroke-width', 1.5);
+            weekAxisG.append('line')
+                .attr('x1', 0).attr('x2', width)
+                .attr('y1', 0).attr('y2', 0)
+                .style('stroke', axisStroke).style('stroke-width', 1.5);
+            weekAxisG.append('line')
+                .attr('x1', 0).attr('x2', width)
+                .attr('y1', weekRowHeight).attr('y2', weekRowHeight)
+                .style('stroke', axisStroke).style('stroke-width', 1.5);
+        }
 
-            const label = (!startsOnMonday && idx === 0) ? 'W0' : `W${startsOnMonday ? idx + 1 : idx}`;
-            weekAxisG.append('text')
-                .attr('x', (x1 + x2) / 2).attr('y', weekRowHeight / 2)
-                .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-                .style('font-size', '11px').style('font-weight', '600').style('fill', axisText)
-                .text(label);
-        });
-        // Closing right border + bottom border
-        weekAxisG.append('line')
-            .attr('x1', width).attr('x2', width)
-            .attr('y1', 0).attr('y2', weekRowHeight)
-            .style('stroke', axisStroke).style('stroke-width', 1.5);
-        weekAxisG.append('line')
-            .attr('x1', 0).attr('x2', width)
-            .attr('y1', weekRowHeight).attr('y2', weekRowHeight)
-            .style('stroke', axisStroke).style('stroke-width', 1.5);
+        if (showMonths) {
+            // Month row: group weekday slots by month
+            const monthGroups = [];
+            let curMonth = null;
+            slotList.forEach((d, i) => {
+                const mk = d3.timeFormat('%Y-%m')(d);
+                if (mk !== curMonth) {
+                    monthGroups.push({ key: mk, date: d, startIdx: i });
+                    curMonth = mk;
+                }
+            });
 
-        // Month row: group weekday slots by month
-        const monthGroups = [];
-        let curMonth = null;
-        slotList.forEach((d, i) => {
-            const mk = d3.timeFormat('%Y-%m')(d);
-            if (mk !== curMonth) {
-                monthGroups.push({ key: mk, date: d, startIdx: i });
-                curMonth = mk;
-            }
-        });
+            const monthAxisG = svg.append('g')
+                .attr('class', 'x-axis x-axis-months')
+                .attr('transform', `translate(0,${axisY + weekRowHeight})`);
 
-        const monthAxisG = svg.append('g')
-            .attr('class', 'x-axis x-axis-months')
-            .attr('transform', `translate(0,${axisY + weekRowHeight})`);
+            monthGroups.forEach((mg, idx) => {
+                const x1 = mg.startIdx * dayWidth;
+                const nextIdx = idx + 1 < monthGroups.length ? monthGroups[idx + 1].startIdx : slotList.length;
+                const x2 = nextIdx * dayWidth;
+                const mWidth = x2 - x1;
 
-        monthGroups.forEach((mg, idx) => {
-            const x1 = mg.startIdx * dayWidth;
-            const nextIdx = idx + 1 < monthGroups.length ? monthGroups[idx + 1].startIdx : slotList.length;
-            const x2 = nextIdx * dayWidth;
-            const mWidth = x2 - x1;
+                monthAxisG.append('rect')
+                    .attr('x', x1).attr('y', 0)
+                    .attr('width', mWidth).attr('height', monthRowHeight)
+                    .attr('fill', accentSubtle)
+                    .attr('stroke', axisStroke).attr('stroke-width', 1.5);
 
-            monthAxisG.append('rect')
-                .attr('x', x1).attr('y', 0)
-                .attr('width', mWidth).attr('height', monthRowHeight)
-                .attr('fill', accentSubtle)
-                .attr('stroke', axisStroke).attr('stroke-width', 1.5);
-
-            monthAxisG.append('text')
-                .attr('x', x1 + mWidth / 2).attr('y', monthRowHeight / 2)
-                .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
-                .style('font-size', '11px').style('font-weight', '700').style('fill', axisText)
-                .text(d3.timeFormat('%B %Y')(mg.date));
-        });
+                monthAxisG.append('text')
+                    .attr('x', x1 + mWidth / 2).attr('y', monthRowHeight / 2)
+                    .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                    .style('font-size', '11px').style('font-weight', '700').style('fill', axisText)
+                    .text(d3.timeFormat('%B %Y')(mg.date));
+            });
+        }
     }
 
     // Activity bars
@@ -971,7 +1002,7 @@ function collectProjectData() {
         });
     });
 
-    return { projectName, projectStart, holidays, activities, showWeekends };
+    return { projectName, projectStart, holidays, activities, showWeekends, showWeeks, showMonths };
 }
 
 function saveProject() {
@@ -1008,6 +1039,16 @@ function restoreProjectData(data, autoGenerate = true) {
     if (typeof data.showWeekends === 'boolean') {
         showWeekends = data.showWeekends;
         document.getElementById('showWeekends').checked = showWeekends;
+    }
+
+    // Restore showWeeks / showMonths toggles
+    if (typeof data.showWeeks === 'boolean') {
+        showWeeks = data.showWeeks;
+        document.getElementById('showWeeks').checked = showWeeks;
+    }
+    if (typeof data.showMonths === 'boolean') {
+        showMonths = data.showMonths;
+        document.getElementById('showMonths').checked = showMonths;
     }
 
     // Restore holidays
