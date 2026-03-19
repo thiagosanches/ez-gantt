@@ -715,18 +715,14 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
 
     if (!hideWeekends) {
         // --- Normal (show-weekends) mode ---
-        // If the project doesn't start on a Monday the first (partial) week is W0;
-        // full weeks start at W1. Monday = getDay() 1.
-        const startsOnMonday = minDate.getDay() === 1;
+        // Weeks run Sun–Sat (d3.timeWeek is Sunday-based).
+        // If the project doesn't start on a Sunday the first (partial) week is W0;
+        // full weeks start at W1.
+        const startsOnSunday = minDate.getDay() === 0;
 
-        const weeks = d3.timeWeek.range(minDate, maxDate);
-        // d3.timeWeek starts on Sunday — nudge to Monday-aligned weeks
-        const mondayWeeks = weeks.map(w => {
-            const m = new Date(w);
-            // d3 timeWeek gives Sunday; shift forward 1 day to Monday
-            m.setDate(m.getDate() + 1);
-            return m;
-        }).filter(m => m >= minDate && m < maxDate);
+        // d3.timeWeek.range returns Sundays — use them directly as week boundaries.
+        const sundayWeeks = d3.timeWeek.range(minDate, maxDate)
+            .filter(s => s > minDate && s < maxDate);
 
         if (showDays) {
             // Draw day row (topmost axis row, closest to the bars)
@@ -776,25 +772,25 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
 
             // Build a unified list of week segments for drawing (W0 + W1, W2…)
             const weekSegments = [];
-            if (!startsOnMonday) {
+            if (!startsOnSunday) {
                 weekSegments.push({
                     x1: xScale(minDate),
-                    x2: mondayWeeks.length > 0 ? xScale(mondayWeeks[0]) : width,
+                    x2: sundayWeeks.length > 0 ? xScale(sundayWeeks[0]) : width,
                     label: 'W0',
                 });
             } else {
-                // Project starts on a Monday — first full week is W1, starting at minDate
+                // Project starts on a Sunday — first full week is W1, starting at minDate
                 weekSegments.push({
                     x1: xScale(minDate),
-                    x2: mondayWeeks.length > 0 ? xScale(mondayWeeks[0]) : width,
+                    x2: sundayWeeks.length > 0 ? xScale(sundayWeeks[0]) : width,
                     label: 'W1',
                 });
             }
-            mondayWeeks.forEach((w, idx) => {
+            sundayWeeks.forEach((w, idx) => {
                 weekSegments.push({
                     x1: xScale(w),
-                    x2: idx + 1 < mondayWeeks.length ? xScale(mondayWeeks[idx + 1]) : width,
-                    label: `W${idx + (startsOnMonday ? 2 : 1)}`,
+                    x2: idx + 1 < sundayWeeks.length ? xScale(sundayWeeks[idx + 1]) : width,
+                    label: `W${idx + (startsOnSunday ? 2 : 1)}`,
                 });
             });
 
