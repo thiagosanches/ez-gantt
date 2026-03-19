@@ -378,6 +378,69 @@ function updateDependencyDropdowns() {
 // ---------------------------------------------------------------------------
 // Add / Remove activities
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Milestone emoji picker
+// ---------------------------------------------------------------------------
+const MILESTONE_EMOJIS = [
+    '🏁','🎯','⭐','🚀','🔔','✅','🏆','💡','🔥','⚡',
+    '🎉','📌','🛡️','🔑','💎','🌟','🎖️','🏅','📅','🔖',
+    '🚩','⛳','🎗️','🌈','💥','🎁','🔮','🧩','🛠️','📣',
+];
+
+function buildMilestoneRowHTML(isMilestone = false, emoji = '🏁') {
+    const emojiBtns = MILESTONE_EMOJIS.map(e =>
+        `<button type="button" class="emoji-option${e === emoji ? ' selected' : ''}" data-emoji="${e}">${e}</button>`
+    ).join('');
+    return `
+        <div class="form-group milestone-row">
+            <label class="milestone-toggle-label">
+                <input type="checkbox" class="activity-milestone"${isMilestone ? ' checked' : ''}> Milestone
+            </label>
+            <button type="button" class="milestone-emoji-btn" title="Pick emoji">${emoji}</button>
+            <div class="emoji-picker" ${isMilestone ? '' : 'hidden'}>
+                ${emojiBtns}
+            </div>
+        </div>`;
+}
+
+function attachMilestoneListeners(item) {
+    const checkbox = item.querySelector('.activity-milestone');
+    const emojiBtn = item.querySelector('.milestone-emoji-btn');
+    const picker   = item.querySelector('.emoji-picker');
+
+    checkbox.addEventListener('change', () => {
+        picker.hidden = !checkbox.checked;
+        scheduleSave();
+        scheduleRender();
+    });
+
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // close all other open pickers first
+        document.querySelectorAll('.emoji-picker:not([hidden])').forEach(p => {
+            if (p !== picker) p.hidden = true;
+        });
+        picker.hidden = !picker.hidden;
+    });
+
+    picker.addEventListener('click', (e) => {
+        const btn = e.target.closest('.emoji-option');
+        if (!btn) return;
+        const emoji = btn.dataset.emoji;
+        emojiBtn.textContent = emoji;
+        picker.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        picker.hidden = true;
+        scheduleSave();
+        scheduleRender();
+    });
+}
+
+// Close emoji pickers when clicking outside
+document.addEventListener('click', () => {
+    document.querySelectorAll('.emoji-picker:not([hidden])').forEach(p => p.hidden = true);
+});
+
 document.getElementById('addActivity').addEventListener('click', () => {
     const container = document.getElementById('activitiesContainer');
     const item = document.createElement('div');
@@ -415,6 +478,7 @@ document.getElementById('addActivity').addEventListener('click', () => {
             <label>Custom Start Date:</label>
             <input type="date" class="activity-custom-start">
         </div>
+        ${buildMilestoneRowHTML()}
     `;
 
     container.appendChild(item);
@@ -427,6 +491,7 @@ document.getElementById('addActivity').addEventListener('click', () => {
     item.querySelector('.activity-workdays').addEventListener('input', () => updateFteHint(item));
     item.querySelector('.activity-fte').addEventListener('input', () => updateFteHint(item));
     updateFteHint(item);
+    attachMilestoneListeners(item);
     scheduleSave();
 });
 
@@ -1051,6 +1116,19 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 .attr('fill', d.color).attr('rx', 4).attr('ry', 4)
                 .style('opacity', 0.85);
         });
+
+        // Milestone emoji — rendered after the bar's right edge
+        if (d.milestone) {
+            const endX = xScale(d3ParseDate(d.end)) + oneDayWidth + 4;
+            const midY = yScale(i) + yScale.bandwidth() / 2;
+            barGroup.append('text')
+                .attr('x', endX)
+                .attr('y', midY)
+                .attr('dominant-baseline', 'middle')
+                .style('font-size', '18px')
+                .style('pointer-events', 'none')
+                .text(d.milestoneEmoji || '🏁');
+        }
     });
 
     // Labels on bars
@@ -1148,6 +1226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.activity-item').forEach(item => {
         const sel = item.querySelector('.activity-dependency');
         toggleStartDateField(sel);
+        attachMilestoneListeners(item);
     });
 });
 
@@ -1168,6 +1247,8 @@ function collectProjectData() {
             dependsOn: item.querySelector('.activity-dependency').value,
             customStart: item.querySelector('.activity-custom-start').value,
             color: item.querySelector('.activity-color').value,
+            milestone: item.querySelector('.activity-milestone').checked,
+            milestoneEmoji: item.querySelector('.milestone-emoji-btn').textContent.trim(),
         });
     });
 
@@ -1269,12 +1350,14 @@ function restoreProjectData(data, autoGenerate = true) {
                 <label>Custom Start Date:</label>
                 <input type="date" class="activity-custom-start" value="${escapeHtml(act.customStart || '')}">
             </div>
+            ${buildMilestoneRowHTML(!!act.milestone, act.milestoneEmoji || '🏁')}
         `;
         container.appendChild(item);
 
         item.querySelector('.activity-workdays').addEventListener('input', () => updateFteHint(item));
         item.querySelector('.activity-fte').addEventListener('input', () => updateFteHint(item));
         updateFteHint(item);
+        attachMilestoneListeners(item);
     });
 
     updateDependencyDropdowns();

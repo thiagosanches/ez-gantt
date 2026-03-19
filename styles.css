@@ -948,3 +948,101 @@ body.dark .instructions li {
 .x-axis-months rect {
     /* fills are set inline from JS using CSS variables; no override needed */
 }
+
+/* -----------------------------------------------------------------------
+   Milestone row — checkbox + emoji picker
+   ----------------------------------------------------------------------- */
+.milestone-row {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.milestone-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.75em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.milestone-toggle-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.milestone-emoji-btn {
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 1.15em;
+    cursor: pointer;
+    line-height: 1;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.milestone-emoji-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+}
+
+.emoji-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    background: var(--bg-container);
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    margin-top: 2px;
+}
+
+.emoji-picker[hidden] {
+    display: none;
+}
+
+.emoji-option {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 3px 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+.emoji-option:hover {
+    background: var(--accent-subtle);
+    border-color: var(--accent);
+}
+
+.emoji-option.selected {
+    background: var(--accent-subtle);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Dark mode adjustments */
+body.dark .milestone-emoji-btn {
+    background: var(--bg-input);
+    border-color: var(--border-input);
+    color: var(--text-primary);
+}
+
+body.dark .emoji-picker {
+    background: var(--bg-container);
+    border-color: var(--border-input);
+}
