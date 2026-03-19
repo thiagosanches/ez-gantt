@@ -7,6 +7,7 @@ let showWeeks   = true;   // default: week row visible
 let showMonths  = true;   // default: month row visible
 let showDays    = true;   // default: day row visible
 let autosaveTimer = null;
+let renderTimer = null;
 
 // ---------------------------------------------------------------------------
 // localStorage persistence
@@ -50,12 +51,17 @@ function scheduleSave() {
     autosaveTimer = setTimeout(saveToLocalStorage, 600);
 }
 
-// Attach autosave listeners to all DOM inputs/selects in the form
+function scheduleRender() {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(generateTimeline, 400);
+}
+
+// Attach autosave + auto-render listeners to all DOM inputs/selects in the form
 function attachAutosaveListeners() {
     const form = document.querySelector('.form-section');
     if (!form) return;
-    form.addEventListener('input', scheduleSave);
-    form.addEventListener('change', scheduleSave);
+    form.addEventListener('input', () => { scheduleSave(); scheduleRender(); });
+    form.addEventListener('change', () => { scheduleSave(); scheduleRender(); });
 }
 
 // Initialize
@@ -71,26 +77,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('showWeekends').addEventListener('change', (e) => {
         showWeekends = e.target.checked;
         scheduleSave();
-        // Re-render if a chart already exists
-        if (ganttChart) document.getElementById('generateTimeline').click();
+        if (ganttChart) scheduleRender();
     });
 
     document.getElementById('showWeeks').addEventListener('change', (e) => {
         showWeeks = e.target.checked;
         scheduleSave();
-        if (ganttChart) document.getElementById('generateTimeline').click();
+        if (ganttChart) scheduleRender();
     });
 
     document.getElementById('showMonths').addEventListener('change', (e) => {
         showMonths = e.target.checked;
         scheduleSave();
-        if (ganttChart) document.getElementById('generateTimeline').click();
+        if (ganttChart) scheduleRender();
     });
 
     document.getElementById('showDays').addEventListener('change', (e) => {
         showDays = e.target.checked;
         scheduleSave();
-        if (ganttChart) document.getElementById('generateTimeline').click();
+        if (ganttChart) scheduleRender();
     });
 
     // Restore from localStorage (skip if nothing saved)
@@ -138,9 +143,8 @@ function initPanelToggle() {
         btn.title = hidden ? 'Show panel' : 'Hide panel';
         localStorage.setItem('ez-gantt-panel-hidden', hidden);
         // Re-render chart so it fills the new width
-        if (ganttChart) {
             // Wait for the CSS transition to finish (300ms) then re-render
-            setTimeout(() => document.getElementById('generateTimeline').click(), 320);
+            setTimeout(() => generateTimeline(), 320);
         }
     });
 }
@@ -177,6 +181,7 @@ function removeHoliday(index) {
     holidays.splice(index, 1);
     renderHolidaysList();
     scheduleSave();
+    scheduleRender();
 }
 
 document.getElementById('addHoliday').addEventListener('click', () => {
@@ -191,6 +196,7 @@ document.getElementById('addHoliday').addEventListener('click', () => {
     labelInput.value = '';
     renderHolidaysList();
     scheduleSave();
+    scheduleRender();
 });
 
 document.getElementById('exportHolidays').addEventListener('click', () => {
@@ -468,14 +474,11 @@ function calculateProjectEndDate(activities) {
 // ---------------------------------------------------------------------------
 // Generate timeline
 // ---------------------------------------------------------------------------
-document.getElementById('generateTimeline').addEventListener('click', () => {
+function generateTimeline() {
     const projectName = document.getElementById('projectName').value;
     const projectStart = document.getElementById('projectStart').value;
 
-    if (!projectName || !projectStart) {
-        alert('Please fill in project name and start date');
-        return;
-    }
+    if (!projectName || !projectStart) return;
 
     const activities = [];
     document.querySelectorAll('.activity-item').forEach(item => {
@@ -493,10 +496,7 @@ document.getElementById('generateTimeline').addEventListener('click', () => {
         }
     });
 
-    if (activities.length === 0) {
-        alert('Please add at least one activity with a name and working days');
-        return;
-    }
+    if (activities.length === 0) return;
 
     const updated = calculateActivityDates(activities, projectStart);
     const projectEnd = calculateProjectEndDate(updated);
@@ -504,6 +504,23 @@ document.getElementById('generateTimeline').addEventListener('click', () => {
 
     document.getElementById('exportPng').style.display = 'inline-block';
     scheduleSave();
+}
+
+document.getElementById('generateTimeline').addEventListener('click', () => {
+    const projectName = document.getElementById('projectName').value;
+    const projectStart = document.getElementById('projectStart').value;
+    if (!projectName || !projectStart) {
+        alert('Please fill in project name and start date');
+        return;
+    }
+    const hasActivities = [...document.querySelectorAll('.activity-item')]
+        .some(item => item.querySelector('.activity-name').value &&
+              parseInt(item.querySelector('.activity-workdays').value) > 0);
+    if (!hasActivities) {
+        alert('Please add at least one activity with a name and working days');
+        return;
+    }
+    generateTimeline();
 });
 
 // ---------------------------------------------------------------------------
@@ -1227,7 +1244,7 @@ function restoreProjectData(data, autoGenerate = true) {
         toggleStartDateField(select);
     });
 
-    if (autoGenerate) document.getElementById('generateTimeline').click();
+    if (autoGenerate) generateTimeline();
 }
 
 function escapeHtml(str) {
