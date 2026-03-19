@@ -52,10 +52,13 @@
     /* Form sidebar */
     --form-bg:            #e6e5ea;
     --form-border:        #cccbd2;
+    --form-text-primary:  #111111;
+    --form-text-secondary:#222222;
+    --form-text-muted:    #555555;
     --form-input-bg:      #ffffff;
-    --form-input-border:  #c6dcec;
+    --form-input-border:  #cccccc;
     --form-card-bg:       #ffffff;
-    --form-card-border:   #c6dcec;
+    --form-card-border:   #cccccc;
     --bg-form-item:       #e6e5ea;
     --bg-form-item-border:#cccbd2;
 }
@@ -250,7 +253,7 @@ header p {
 .form-section select {
     background: var(--form-input-bg);
     border-color: var(--form-input-border);
-    color: var(--text-primary);
+    color: #111111;
 }
 
 .form-section input[type="text"]:focus,
@@ -267,20 +270,20 @@ header p {
     background: var(--form-input-bg);
 }
 
-/* Secondary buttons — white on dark background */
+/* Secondary buttons — white on sidebar background */
 .form-section .btn-secondary {
     background: #ffffff;
-    color: var(--text-secondary);
-    border-color: #c6dcec;
+    color: #111111;
+    border-color: #cccccc;
 }
 
 .form-section .btn-secondary:hover {
     background: #ffffff;
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: #111111;
+    color: #111111;
 }
 
-/* Primary button — bright accent on dark bg */
+/* Primary button */
 .form-section .btn-primary {
     background: var(--accent);
     color: #ffffff;
