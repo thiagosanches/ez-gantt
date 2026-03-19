@@ -725,14 +725,14 @@ body.dark .btn-primary:hover {
 /* Secondary — ghost style */
 .btn-secondary {
     background: transparent;
-    color: var(--text-secondary);
+    color: #111111;
     border: 1px solid var(--border-input);
 }
 
 .btn-secondary:hover {
     background: var(--accent-subtle);
     border-color: var(--accent);
-    color: var(--accent);
+    color: #111111;
 }
 
 body.dark .btn-secondary {
@@ -802,11 +802,15 @@ body.dark .remove-activity:hover {
     gap: 5px;
     font-size: 0.8em;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #111111;
     cursor: pointer;
     white-space: nowrap;
     text-transform: none;
     letter-spacing: normal;
+}
+
+body.dark .toggle-label {
+    color: var(--text-secondary);
 }
 
 .toggle-label input[type="checkbox"] {
