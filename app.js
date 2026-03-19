@@ -436,6 +436,7 @@ function removeActivity(button) {
     button.closest('.activity-item').remove();
     updateDependencyDropdowns();
     scheduleSave();
+    scheduleRender();
 }
 
 // ---------------------------------------------------------------------------
@@ -498,12 +499,15 @@ function generateTimeline() {
 
     if (activities.length === 0) return;
 
-    const updated = calculateActivityDates(activities, projectStart);
-    const projectEnd = calculateProjectEndDate(updated);
-    renderGanttChart(projectName, projectStart, projectEnd, updated);
-
-    document.getElementById('exportPng').style.display = 'inline-block';
-    scheduleSave();
+    try {
+        const updated = calculateActivityDates(activities, projectStart);
+        const projectEnd = calculateProjectEndDate(updated);
+        renderGanttChart(projectName, projectStart, projectEnd, updated);
+        document.getElementById('exportPng').style.display = 'inline-block';
+        scheduleSave();
+    } catch (e) {
+        console.error('generateTimeline error:', e);
+    }
 }
 
 document.getElementById('generateTimeline').addEventListener('click', () => {
@@ -1244,7 +1248,7 @@ function restoreProjectData(data, autoGenerate = true) {
         toggleStartDateField(select);
     });
 
-    if (autoGenerate) generateTimeline();
+    if (autoGenerate) requestAnimationFrame(() => requestAnimationFrame(generateTimeline));
 }
 
 function escapeHtml(str) {
