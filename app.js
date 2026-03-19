@@ -535,7 +535,9 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     const isDark = document.body.classList.contains('dark');
 
     // Read weekend/holiday colors from CSS variables so dark mode is respected
-    const style = getComputedStyle(document.documentElement);
+    // NOTE: must read from document.body (not documentElement) because dark-mode
+    // overrides are scoped to `body.dark`, not to the `<html>` element.
+    const style = getComputedStyle(document.body);
     const weekendFill   = style.getPropertyValue('--weekend-bg').trim()  || '#e8e8e8';
     const weekendText   = style.getPropertyValue('--weekend-text').trim() || '#aaaaaa';
     const holidayFill   = style.getPropertyValue('--holiday-bg').trim()  || '#ffcccc';
@@ -1056,7 +1058,7 @@ document.getElementById('exportPng').addEventListener('click', () => {
     // by the page. Without this, the browser's SVG→canvas rasterizer falls back
     // to its built-in generic sans-serif font and ignores inherited CSS.
     const fontFamily = getComputedStyle(document.body).fontFamily;
-    const computedStyle = getComputedStyle(document.documentElement);
+    const computedStyle = getComputedStyle(document.body);
     const axisTextColor  = computedStyle.getPropertyValue('--axis-text').trim()   || '#666666';
     const gridLineColor  = computedStyle.getPropertyValue('--grid-line').trim()   || '#e9ecef';
     const axisStrokeColor = computedStyle.getPropertyValue('--axis-stroke').trim() || '#999999';
