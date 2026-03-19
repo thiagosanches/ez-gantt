@@ -486,6 +486,7 @@ body.dark .holiday-tag {
     text-align: center;
     display: inline-block;
     letter-spacing: 0.01em;
+    text-transform: none;
 }
 
 .btn:active { transform: translateY(1px); }
