@@ -50,21 +50,10 @@
     --header-subtext:     #7dbce8;
 
     /* Form sidebar — brand navy, one step lighter than header */
-    --form-bg:            #082b45;
-    --form-border:        #1a3a50;
-    --form-text-primary:  #e8f4fd;
-    --form-text-secondary:#7dbce8;
-    --form-text-muted:    #4a7fa8;
-    --form-input-bg:      #ffffff;
-    --form-input-border:  #c6dcec;
-    --form-card-bg:       #ffffff;
-    --form-card-border:   #c6dcec;
-    --form-divider:       #1a3a50;
-    --form-accent-subtle: #051e30;
-
-    /* Legacy aliases */
-    --bg-form-item:       #082b45;
-    --bg-form-item-border:#1a3a50;
+    --form-bg:            #0a6ea8;
+    --form-border:        #0c5d8e;
+    --bg-form-item:       #0a6ea8;
+    --bg-form-item-border:#0c5d8e;
 }
 
 /* -----------------------------------------------------------------------
