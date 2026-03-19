@@ -5,6 +5,7 @@ let holidays = []; // [{ date: 'YYYY-MM-DD', label: 'Holiday name' }]
 let showWeekends = false; // default: weekends are hidden
 let showWeeks   = true;   // default: week row visible
 let showMonths  = true;   // default: month row visible
+let showDays    = true;   // default: day row visible
 let autosaveTimer = null;
 
 // ---------------------------------------------------------------------------
@@ -81,6 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('showMonths').addEventListener('change', (e) => {
         showMonths = e.target.checked;
+        scheduleSave();
+        if (ganttChart) document.getElementById('generateTimeline').click();
+    });
+
+    document.getElementById('showDays').addEventListener('change', (e) => {
+        showDays = e.target.checked;
         scheduleSave();
         if (ganttChart) document.getElementById('generateTimeline').click();
     });
@@ -643,9 +650,10 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     }
 
     // ---------------------------------------------------------------------------
-    // X axis with two header rows: WEEK row + MONTH row
+    // X axis rows: DAY row + WEEK row + MONTH row (each togglable)
     // ---------------------------------------------------------------------------
     const axisY = activities.length * 60;
+    const dayRowHeight   = showDays   ? 20 : 0;
     const weekRowHeight  = showWeeks  ? 24 : 0;
     const monthRowHeight = showMonths ? 24 : 0;
 
@@ -664,11 +672,51 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             return m;
         }).filter(m => m >= minDate && m < maxDate);
 
+        if (showDays) {
+            // Draw day row (topmost axis row, closest to the bars)
+            const dayAxis = svg.append('g')
+                .attr('class', 'x-axis x-axis-days')
+                .attr('transform', `translate(0,${axisY})`);
+
+            allDays.forEach(date => {
+                const isWknd = date.getDay() === 0 || date.getDay() === 6;
+                const isHol  = holidays.some(h => h.date === dateToString(date));
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const x1 = xScale(date);
+                const x2 = xScale(nextDay);
+                const cellW = x2 - x1;
+
+                const fill = isHol ? holidayFill : isWknd ? weekendFill : 'transparent';
+                dayAxis.append('rect')
+                    .attr('x', x1).attr('y', 0)
+                    .attr('width', cellW).attr('height', dayRowHeight)
+                    .attr('fill', fill)
+                    .attr('stroke', axisStroke).attr('stroke-width', 0.5);
+
+                // Only label if cell is wide enough
+                if (cellW >= 14) {
+                    dayAxis.append('text')
+                        .attr('x', x1 + cellW / 2).attr('y', dayRowHeight / 2)
+                        .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                        .style('font-size', '10px')
+                        .style('fill', isWknd || isHol ? weekendText : axisText)
+                        .text(date.getDate());
+                }
+            });
+            // Outer border
+            dayAxis.append('rect')
+                .attr('x', 0).attr('y', 0)
+                .attr('width', width).attr('height', dayRowHeight)
+                .attr('fill', 'none')
+                .attr('stroke', axisStroke).attr('stroke-width', 1.5);
+        }
+
         if (showWeeks) {
             // Draw week row (row 1)
             const weekAxis = svg.append('g')
                 .attr('class', 'x-axis x-axis-weeks')
-                .attr('transform', `translate(0,${axisY})`);
+                .attr('transform', `translate(0,${axisY + dayRowHeight})`);
 
             // Build a unified list of week segments for drawing (W0 + W1, W2…)
             const weekSegments = [];
@@ -726,7 +774,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             // Draw month bands (row 2)
             const monthAxis = svg.append('g')
                 .attr('class', 'x-axis x-axis-months')
-                .attr('transform', `translate(0,${axisY + weekRowHeight})`);
+                .attr('transform', `translate(0,${axisY + dayRowHeight + weekRowHeight})`);
 
             const months = d3.timeMonth.range(d3.timeMonth.floor(minDate), maxDate);
             months.forEach((m, idx) => {
@@ -771,10 +819,44 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
         // If the project doesn't start on a Monday the first (partial) week is W0.
         const startsOnMonday = minDate.getDay() === 1;
 
+        if (showDays) {
+            // Draw day row (topmost axis row, closest to bars) — one cell per weekday slot
+            const dayAxisG = svg.append('g')
+                .attr('class', 'x-axis x-axis-days')
+                .attr('transform', `translate(0,${axisY})`);
+
+            slotList.forEach((date, i) => {
+                const isHol = holidays.some(h => h.date === dateToString(date));
+                const x1 = i * dayWidth;
+                const fill = isHol ? holidayFill : 'transparent';
+
+                dayAxisG.append('rect')
+                    .attr('x', x1).attr('y', 0)
+                    .attr('width', dayWidth).attr('height', dayRowHeight)
+                    .attr('fill', fill)
+                    .attr('stroke', axisStroke).attr('stroke-width', 0.5);
+
+                if (dayWidth >= 14) {
+                    dayAxisG.append('text')
+                        .attr('x', x1 + dayWidth / 2).attr('y', dayRowHeight / 2)
+                        .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+                        .style('font-size', '10px')
+                        .style('fill', isHol ? weekendText : axisText)
+                        .text(date.getDate());
+                }
+            });
+            // Outer border
+            dayAxisG.append('rect')
+                .attr('x', 0).attr('y', 0)
+                .attr('width', width).attr('height', dayRowHeight)
+                .attr('fill', 'none')
+                .attr('stroke', axisStroke).attr('stroke-width', 1.5);
+        }
+
         if (showWeeks) {
             const weekAxisG = svg.append('g')
                 .attr('class', 'x-axis x-axis-weeks')
-                .attr('transform', `translate(0,${axisY})`);
+                .attr('transform', `translate(0,${axisY + dayRowHeight})`);
 
             weekGroups.forEach((wg, idx) => {
                 const x1 = wg.startIdx * dayWidth;
@@ -827,7 +909,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
 
             const monthAxisG = svg.append('g')
                 .attr('class', 'x-axis x-axis-months')
-                .attr('transform', `translate(0,${axisY + weekRowHeight})`);
+                .attr('transform', `translate(0,${axisY + dayRowHeight + weekRowHeight})`);
 
             monthGroups.forEach((mg, idx) => {
                 const x1 = mg.startIdx * dayWidth;
@@ -1002,7 +1084,7 @@ function collectProjectData() {
         });
     });
 
-    return { projectName, projectStart, holidays, activities, showWeekends, showWeeks, showMonths };
+    return { projectName, projectStart, holidays, activities, showWeekends, showWeeks, showMonths, showDays };
 }
 
 function saveProject() {
@@ -1049,6 +1131,10 @@ function restoreProjectData(data, autoGenerate = true) {
     if (typeof data.showMonths === 'boolean') {
         showMonths = data.showMonths;
         document.getElementById('showMonths').checked = showMonths;
+    }
+    if (typeof data.showDays === 'boolean') {
+        showDays = data.showDays;
+        document.getElementById('showDays').checked = showDays;
     }
 
     // Restore holidays
