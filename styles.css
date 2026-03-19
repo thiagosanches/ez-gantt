@@ -298,6 +298,29 @@ header p {
     box-shadow: 0 2px 8px rgba(0,149,255,0.4);
 }
 
+/* Dark mode — sidebar buttons */
+body.dark .form-section .btn-secondary {
+    background: transparent;
+    color: #7dbce8;
+    border-color: #1e3345;
+}
+
+body.dark .form-section .btn-secondary:hover {
+    background: rgba(0,149,255,0.12);
+    border-color: #0095ff;
+    color: #0095ff;
+}
+
+body.dark .form-section .btn-primary {
+    background: #0095ff;
+    color: #e8f4fd;
+}
+
+body.dark .form-section .btn-primary:hover {
+    background: #29aaff;
+    box-shadow: 0 2px 8px rgba(0,149,255,0.4);
+}
+
 /* Activity cards */
 .form-section .activity-item {
     background: var(--form-card-bg);
