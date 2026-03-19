@@ -5,121 +5,129 @@
 
 /* -----------------------------------------------------------------------
    Design tokens — light theme
-   Palette: #0095ff, #082b45, #0967aa, #7dbce8, #c6dcec
+   Palette: #0095ff · #082b45 · #0967aa · #7dbce8 · #c6dcec
    ----------------------------------------------------------------------- */
 :root {
-    /* Surfaces */
-    --bg-body:            #edf4fb;
+    /* Page & chart surfaces */
+    --bg-body:            #e8f2fb;
     --bg-container:       #ffffff;
     --bg-chart:           #ffffff;
 
-    /* Text (chart / right side) */
+    /* Text — chart / right panel */
     --text-primary:       #082b45;
     --text-secondary:     #0967aa;
     --text-muted:         #5a90b8;
 
-    /* Inputs (chart / right side) */
+    /* Inputs — chart / right panel */
     --bg-input:           #ffffff;
     --border-input:       #b0d0e8;
     --border-input-focus: #0095ff;
 
-    /* Accent — Brand Blue */
+    /* Accent */
     --accent:             #0095ff;
-    --accent-hover:       #0067cc;
+    --accent-hover:       #0075cc;
     --accent-subtle:      #dceffe;
 
     /* Chart helpers */
     --grid-line:          #c6dcec;
     --axis-stroke:        #b0d0e8;
     --axis-text:          #0967aa;
-    --weekend-bg:         #f4f9fd;
+    --weekend-bg:         #f0f7fd;
     --weekend-text:       #7dbce8;
     --holiday-bg:         #fff0f0;
     --week-band-odd:      transparent;
     --week-band-even:     #edf6ff;
 
     /* Elevation */
-    --shadow-sm:          0 1px 3px rgba(8,43,69,0.08), 0 1px 2px rgba(8,43,69,0.04);
-    --shadow-md:          0 4px 16px rgba(8,43,69,0.10), 0 2px 6px rgba(8,43,69,0.06);
+    --shadow-sm:          0 1px 3px rgba(8,43,69,0.10), 0 1px 2px rgba(8,43,69,0.06);
+    --shadow-md:          0 4px 16px rgba(8,43,69,0.12), 0 2px 6px rgba(8,43,69,0.07);
     --shadow:             var(--shadow-md);
 
-    /* Header */
-    --header-bg:          #082b45;
-    --header-border:      #051c2e;
+    /* Header — deepest navy, anchors the top */
+    --header-bg:          #051e30;
+    --header-border:      #031422;
     --header-text:        #e8f4fd;
     --header-subtext:     #7dbce8;
 
-    /* Form sidebar */
-    --form-bg:            #515b62;
-    --form-border:        #3a4349;
-    --form-text-primary:  #f0f4f6;
-    --form-text-secondary:#b8c8d0;
-    --form-text-muted:    #7a9aaa;
-    --form-input-bg:      #424b52;
-    --form-input-border:  #3a4349;
-    --form-card-bg:       #424b52;
-    --form-card-border:   #3a4349;
-    --form-divider:       #3a4349;
-    --form-accent-subtle: #3a4349;
+    /* Form sidebar — brand navy, one step lighter than header */
+    --form-bg:            #082b45;
+    --form-border:        #0c3d5e;
+    --form-text-primary:  #e8f4fd;
+    --form-text-secondary:#7dbce8;
+    --form-text-muted:    #4a7fa8;
+    --form-input-bg:      #0a3354;
+    --form-input-border:  #0f4a78;
+    --form-card-bg:       #0a3354;
+    --form-card-border:   #0f4a78;
+    --form-divider:       #0c3d5e;
+    --form-accent-subtle: #051e30;
 
-    /* Legacy alias so .bg-form-item-border still works for toggle btn */
-    --bg-form-item:       #515b62;
-    --bg-form-item-border:#3a4349;
+    /* Legacy aliases */
+    --bg-form-item:       #082b45;
+    --bg-form-item-border:#0c3d5e;
 }
 
 /* -----------------------------------------------------------------------
-   Dark theme tokens — deep navy base, strong contrast
+   Dark theme tokens — deep blue axis throughout
    ----------------------------------------------------------------------- */
 body.dark {
-    --bg-body:            #030d14;
+    /* Page & chart */
+    --bg-body:            #020e18;
     --bg-container:       #061724;
     --bg-chart:           #061724;
-    --bg-input:           #0d2a42;
+    --bg-input:           #0a2236;
 
+    /* Text — chart / right panel */
     --text-primary:       #e8f4fd;
     --text-secondary:     #7dbce8;
-    --text-muted:         #4a7fa8;
+    --text-muted:         #3d6e90;
 
-    --border-input:       #1a4468;
+    /* Inputs — chart / right panel */
+    --border-input:       #133d5c;
     --border-input-focus: #0095ff;
 
+    /* Accent */
     --accent:             #0095ff;
     --accent-hover:       #29aaff;
-    --accent-subtle:      #051c2e;
+    --accent-subtle:      #031422;
 
-    --grid-line:          #133352;
-    --axis-stroke:        #1a4468;
+    /* Chart helpers */
+    --grid-line:          #0f3050;
+    --axis-stroke:        #133d5c;
     --axis-text:          #7dbce8;
-    --weekend-bg:         #06192a;
-    --weekend-text:       #2d6a9a;
-    --holiday-bg:         #200a0a;
+    --weekend-bg:         #040f1a;
+    --weekend-text:       #1e5a80;
+    --holiday-bg:         #1a0808;
     --week-band-odd:      transparent;
-    --week-band-even:     #071e31;
+    --week-band-even:     #040f1a;
 
-    --shadow-sm:          0 1px 3px rgba(0,0,0,0.4);
-    --shadow-md:          0 4px 16px rgba(0,0,0,0.5);
+    /* Elevation */
+    --shadow-sm:          0 1px 4px rgba(0,0,0,0.45);
+    --shadow-md:          0 4px 20px rgba(0,0,0,0.55);
     --shadow:             var(--shadow-md);
 
-    --header-bg:          #030d14;
-    --header-border:      #0a2135;
+    /* Header */
+    --header-bg:          #020e18;
+    --header-border:      #031422;
     --header-text:        #e8f4fd;
-    --header-subtext:     #4a7fa8;
+    --header-subtext:     #3d6e90;
 
-    /* Form sidebar — darker in dark mode */
-    --form-bg:            #2e3538;
-    --form-border:        #232a2d;
-    --form-text-primary:  #f0f4f6;
-    --form-text-secondary:#b8c8d0;
-    --form-text-muted:    #607880;
-    --form-input-bg:      #252d31;
-    --form-input-border:  #232a2d;
-    --form-card-bg:       #252d31;
-    --form-card-border:   #232a2d;
-    --form-divider:       #232a2d;
-    --form-accent-subtle: #1e2528;
+    /* Form sidebar — deepened navy in dark mode */
+    --form-bg:            #031422;
+    --form-border:        #082b45;
+    --form-text-primary:  #e8f4fd;
+    --form-text-secondary:#7dbce8;
+    --form-text-muted:    #3d6e90;
+    --form-input-bg:      #061724;
+    --form-input-border:  #082b45;
+    --form-card-bg:       #061724;
+    --form-card-border:   #082b45;
+    --form-divider:       #082b45;
+    --form-accent-subtle: #020e18;
 
-    --bg-form-item:       #2e3538;
-    --bg-form-item-border:#232a2d;
+    /* Legacy aliases */
+    --bg-form-item:       #031422;
+    --bg-form-item-border:#082b45;
 }
 
 /* -----------------------------------------------------------------------
@@ -666,15 +674,15 @@ body.dark .holiday-tag {
     border-color: rgba(125,188,232,0.35);
 }
 
-/* Primary — deep navy, reads as "execute/run" */
+/* Primary — brand accent blue */
 .btn-primary {
-    background: #082b45;
+    background: #0095ff;
     color: #e8f4fd;
 }
 
 .btn-primary:hover {
-    background: #0967aa;
-    box-shadow: 0 2px 8px rgba(9,103,170,0.35);
+    background: #0075cc;
+    box-shadow: 0 2px 8px rgba(0,149,255,0.35);
 }
 
 body.dark .btn-primary {
