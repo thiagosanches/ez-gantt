@@ -716,9 +716,9 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     if (!hideWeekends) {
         // --- Normal (show-weekends) mode ---
         // Weeks run Sun–Sat (d3.timeWeek is Sunday-based).
-        // If the project doesn't start on a Sunday the first (partial) week is W0;
-        // full weeks start at W1.
-        const startsOnSunday = minDate.getDay() === 0;
+        // W0 only if the project starts mid-week (Tue–Sat).
+        // Starting on Sun or Mon is considered a full week start → W1.
+        const isFullWeekStart = minDate.getDay() === 0 || minDate.getDay() === 1;
 
         // d3.timeWeek.range returns Sundays — use them directly as week boundaries.
         const sundayWeeks = d3.timeWeek.range(minDate, maxDate)
@@ -772,14 +772,14 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
 
             // Build a unified list of week segments for drawing (W0 + W1, W2…)
             const weekSegments = [];
-            if (!startsOnSunday) {
+            if (!isFullWeekStart) {
                 weekSegments.push({
                     x1: xScale(minDate),
                     x2: sundayWeeks.length > 0 ? xScale(sundayWeeks[0]) : width,
                     label: 'W0',
                 });
             } else {
-                // Project starts on a Sunday — first full week is W1, starting at minDate
+                // Project starts on Sun or Mon — first full week is W1
                 weekSegments.push({
                     x1: xScale(minDate),
                     x2: sundayWeeks.length > 0 ? xScale(sundayWeeks[0]) : width,
@@ -790,7 +790,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 weekSegments.push({
                     x1: xScale(w),
                     x2: idx + 1 < sundayWeeks.length ? xScale(sundayWeeks[idx + 1]) : width,
-                    label: `W${idx + (startsOnSunday ? 2 : 1)}`,
+                    label: `W${idx + (isFullWeekStart ? 2 : 1)}`,
                 });
             });
 
