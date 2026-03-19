@@ -706,6 +706,34 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     }
 
     // ---------------------------------------------------------------------------
+    // Today marker — vertical line + label if today is within the project range
+    // ---------------------------------------------------------------------------
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (today >= minDate && today < maxDate) {
+        const todayX = hideWeekends ? xScale(today) : xScale(today);
+        const chartHeight = activities.length * 60;
+
+        // Vertical line spanning full chart height
+        svg.append('line')
+            .attr('x1', todayX).attr('x2', todayX)
+            .attr('y1', 0).attr('y2', chartHeight)
+            .style('stroke', '#ff4d4d')
+            .style('stroke-width', 2)
+            .style('stroke-dasharray', '4,3')
+            .style('shape-rendering', 'crispEdges');
+
+        // Small "Today" label above the chart area
+        svg.append('text')
+            .attr('x', todayX + 4).attr('y', -10)
+            .attr('text-anchor', 'start')
+            .style('font-size', '10px')
+            .style('font-weight', '700')
+            .style('fill', '#ff4d4d')
+            .text('Today');
+    }
+
+    // ---------------------------------------------------------------------------
     // X axis rows: DAY row + WEEK row + MONTH row (each togglable)
     // ---------------------------------------------------------------------------
     const axisY = activities.length * 60;
