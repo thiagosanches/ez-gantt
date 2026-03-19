@@ -662,7 +662,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             weekAxis.append('text')
                 .attr('x', (x1 + x2) / 2).attr('y', 17).attr('text-anchor', 'middle')
                 .style('font-size', '11px').style('fill', axisText)
-                .text(d3.timeFormat('W%V')(w));
+                .text(`W${idx + 1}`);
         });
 
         // Draw month bands (row 2)
@@ -728,7 +728,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             weekAxisG.append('text')
                 .attr('x', (x1 + x2) / 2).attr('y', 17).attr('text-anchor', 'middle')
                 .style('font-size', '11px').style('fill', axisText)
-                .text(d3.timeFormat('W%V')(wg.date));
+                .text(`W${idx + 1}`);
         });
 
         // Month row: group working days by month
