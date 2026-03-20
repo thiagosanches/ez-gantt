@@ -395,6 +395,9 @@ function attachMilestoneListeners(item) {
     const checkbox = item.querySelector('.activity-milestone');
     const charInput = item.querySelector('.milestone-character-input');
 
+    // Safety check: ensure both elements exist
+    if (!checkbox || !charInput) return;
+
     checkbox.addEventListener('change', () => {
         charInput.style.display = checkbox.checked ? '' : 'none';
         scheduleSave();
