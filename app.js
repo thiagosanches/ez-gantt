@@ -8,6 +8,7 @@ let showMonths  = true;   // default: month row visible
 let showDays    = true;   // default: day row visible
 let autosaveTimer = null;
 let renderTimer = null;
+let showToday  = true;   // default: today marker visible
 
 // ---------------------------------------------------------------------------
 // localStorage persistence
@@ -94,6 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('showDays').addEventListener('change', (e) => {
         showDays = e.target.checked;
+        scheduleSave();
+        if (ganttChart) scheduleRender();
+    });
+
+    document.getElementById('showToday').addEventListener('change', (e) => {
+        showToday = e.target.checked;
         scheduleSave();
         if (ganttChart) scheduleRender();
     });
@@ -755,7 +762,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     // ---------------------------------------------------------------------------
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (today >= minDate && today < maxDate) {
+    if (showToday && today >= minDate && today < maxDate) {
         const todayX = hideWeekends ? xScale(today) : xScale(today);
         const chartHeight = activities.length * 60;
 
@@ -1232,7 +1239,7 @@ function collectProjectData() {
         });
     });
 
-    return { projectName, projectStart, holidays, activities, showWeekends, showWeeks, showMonths, showDays };
+    return { projectName, projectStart, holidays, activities, showWeekends, showWeeks, showMonths, showDays, showToday };
 }
 
 function saveProject() {
@@ -1283,6 +1290,10 @@ function restoreProjectData(data, autoGenerate = true) {
     if (typeof data.showDays === 'boolean') {
         showDays = data.showDays;
         document.getElementById('showDays').checked = showDays;
+    }
+    if (typeof data.showToday === 'boolean') {
+        showToday = data.showToday;
+        document.getElementById('showToday').checked = showToday;
     }
 
     // Restore holidays
@@ -1370,6 +1381,7 @@ function resetProject() {
         showWeeks: true,
         showMonths: true,
         showDays: true,
+        showToday: true,
         holidays: [],
         activities: [
             { id: 0, name: '', color: '#4F46E5', workdays: 5, fte: 1, dependency: '', customStart: '' }
