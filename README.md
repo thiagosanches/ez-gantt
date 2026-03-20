@@ -23,7 +23,7 @@ An interactive project management tool that helps Project Managers build Gantt c
 
 ## Usage
 
-1. Open `index.html` in your browser, or visit the [GitHub Pages site](https://thiago.github.io/ez-gantt)
+1. Open `index.html` in your browser, or visit the [GitHub Pages site](https://thiagosanches.github.io/ez-gantt/)
 
 2. Create your project:
    - Set project name and start date
