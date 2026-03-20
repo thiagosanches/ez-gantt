@@ -167,6 +167,12 @@ header {
     justify-content: space-between;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 header h1 {
     font-family: 'Instrument Sans', sans-serif;
     font-size: 1.25em;
@@ -704,6 +710,14 @@ body.dark .holiday-tag {
     background: rgba(125,188,232,0.22);
     color: #c6dcec;
     border-color: rgba(125,188,232,0.35);
+}
+
+.btn-icon.github-link {
+    color: #ffffff;
+}
+
+.btn-icon.github-link:hover {
+    color: #ffffff;
 }
 
 /* Primary — brand accent blue */
