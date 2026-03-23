@@ -1126,7 +1126,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
             if (d.milestoneDate) {
                 // Use the custom milestone date
                 const milestoneDate = d3ParseDate(d.milestoneDate);
-                if (milestoneDate >= xDomain[0] && milestoneDate <= xDomain[1]) {
+                if (milestoneDate >= minDate && milestoneDate <= maxDate) {
                     milestoneX = xScale(milestoneDate) + oneDayWidth / 2;
                 } else {
                     // Milestone date is out of visible range, skip rendering milestone
