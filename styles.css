@@ -976,6 +976,7 @@ body.dark .instructions li {
     align-items: center;
     flex-wrap: wrap;
     gap: 6px;
+    margin-bottom: 0;
 }
 
 .milestone-toggle-label {
@@ -999,9 +1000,20 @@ body.dark .instructions li {
     cursor: pointer;
 }
 
+.milestone-inputs-row {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px;
+    align-items: center;
+    margin-top: 0;
+}
+
 .milestone-character-input {
-    width: 50px;
-    padding: 6px 9px;
+    width: 50px !important;
+    max-width: 50px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    padding: 4px 6px;
     border: 1px solid var(--border-input);
     border-radius: 6px;
     font-size: 1.2em;
@@ -1016,4 +1028,97 @@ body.dark .instructions li {
     outline: none;
     border-color: var(--border-input-focus);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.milestone-date-input {
+    flex: 1 1 auto;
+    min-width: 120px;
+    max-width: 100%;
+    padding: 6px 9px;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.3s;
+}
+
+.milestone-date-input:focus {
+    outline: none;
+    border-color: var(--border-input-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.custom-label-row {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 0;
+}
+
+.custom-label-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.75em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.custom-label-toggle-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.custom-label-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.3s;
+}
+
+.custom-label-input:focus {
+    outline: none;
+    border-color: var(--border-input-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.show-dates-row {
+    margin-top: 0;
+}
+
+.show-dates-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.75em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.show-dates-toggle-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent);
+    cursor: pointer;
 }

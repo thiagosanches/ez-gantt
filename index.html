@@ -102,7 +102,21 @@
                             <label class="milestone-toggle-label">
                                 <input type="checkbox" class="activity-milestone"> Milestone
                             </label>
-                            <input type="text" class="milestone-character-input" value="⭐" maxlength="2" placeholder="⭐" style="display:none;">
+                        </div>
+                        <div class="form-group milestone-inputs-row" style="display:none;">
+                            <input type="text" class="milestone-character-input" value="⭐" maxlength="2" placeholder="⭐">
+                            <input type="date" class="milestone-date-input">
+                        </div>
+                        <div class="form-group custom-label-row">
+                            <label class="custom-label-toggle-label">
+                                <input type="checkbox" class="activity-custom-label-toggle"> Custom Label
+                            </label>
+                            <input type="text" class="custom-label-input" placeholder="Enter custom label" style="display:none;">
+                        </div>
+                        <div class="form-group show-dates-row">
+                            <label class="show-dates-toggle-label">
+                                <input type="checkbox" class="activity-show-dates-toggle" checked> Show Dates
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -124,19 +138,19 @@
                 <div class="preview-header">
                     <h2>Timeline Preview</h2>
                     <label class="toggle-label">
-                        <input type="checkbox" id="showWeekends"> Show weekends
+                        <input type="checkbox" id="showWeekends"> Weekends
                     </label>
                     <label class="toggle-label">
-                        <input type="checkbox" id="showWeeks" checked> Show weeks
+                        <input type="checkbox" id="showWeeks" checked> Weeks
                     </label>
                     <label class="toggle-label">
-                        <input type="checkbox" id="showMonths" checked> Show months
+                        <input type="checkbox" id="showMonths" checked> Months
                     </label>
                     <label class="toggle-label">
-                        <input type="checkbox" id="showDays" checked> Show days
+                        <input type="checkbox" id="showDays" checked> Days
                     </label>
                     <label class="toggle-label">
-                        <input type="checkbox" id="showToday" checked> Show today
+                        <input type="checkbox" id="showToday" checked> Today
                     </label>
                     <button id="exportPng" class="btn btn-secondary" style="display:none">Export PNG</button>
                 </div>

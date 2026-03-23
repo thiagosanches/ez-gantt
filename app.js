@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstActivity = document.querySelector('.activity-item');
         if (firstActivity) {
             attachMilestoneListeners(firstActivity);
+            attachCustomLabelListeners(firstActivity);
             updateFteHint(firstActivity);
         }
         // Auto-generate timeline with default values
@@ -397,30 +398,81 @@ function updateDependencyDropdowns() {
 // ---------------------------------------------------------------------------
 // Milestone character input
 // ---------------------------------------------------------------------------
-function buildMilestoneRowHTML(isMilestone = false, character = '⭐') {
+function buildMilestoneRowHTML(isMilestone = false, character = '⭐', milestoneDate = '') {
     return `
         <div class="form-group milestone-row">
             <label class="milestone-toggle-label">
                 <input type="checkbox" class="activity-milestone"${isMilestone ? ' checked' : ''}> Milestone
             </label>
-            <input type="text" class="milestone-character-input" value="${character}" maxlength="2" placeholder="⭐" ${isMilestone ? '' : 'style="display:none;"'}>
+        </div>
+        <div class="form-group milestone-inputs-row" ${isMilestone ? '' : 'style="display:none;"'}>
+            <input type="text" class="milestone-character-input" value="${character}" maxlength="2" placeholder="⭐">
+            <input type="date" class="milestone-date-input" value="${milestoneDate}">
+        </div>`;
+}
+
+function buildCustomLabelRowHTML(hasCustomLabel = false, customLabel = '', showDates = true) {
+    return `
+        <div class="form-group custom-label-row">
+            <label class="custom-label-toggle-label">
+                <input type="checkbox" class="activity-custom-label-toggle"${hasCustomLabel ? ' checked' : ''}> Custom Label
+            </label>
+            <input type="text" class="custom-label-input" value="${customLabel}" placeholder="Enter custom label" ${hasCustomLabel ? '' : 'style="display:none;"'}>
+        </div>
+        <div class="form-group show-dates-row">
+            <label class="show-dates-toggle-label">
+                <input type="checkbox" class="activity-show-dates-toggle"${showDates ? ' checked' : ''}> Show Dates
+            </label>
         </div>`;
 }
 
 function attachMilestoneListeners(item) {
     const checkbox = item.querySelector('.activity-milestone');
     const charInput = item.querySelector('.milestone-character-input');
+    const dateInput = item.querySelector('.milestone-date-input');
+    const inputsRow = item.querySelector('.milestone-inputs-row');
 
-    // Safety check: ensure both elements exist
-    if (!checkbox || !charInput) return;
+    // Safety check: ensure all elements exist
+    if (!checkbox || !charInput || !dateInput || !inputsRow) return;
 
     checkbox.addEventListener('change', () => {
-        charInput.style.display = checkbox.checked ? '' : 'none';
+        const isChecked = checkbox.checked;
+        inputsRow.style.display = isChecked ? '' : 'none';
         scheduleSave();
         scheduleRender();
     });
 
     charInput.addEventListener('input', () => {
+        scheduleSave();
+        scheduleRender();
+    });
+
+    dateInput.addEventListener('change', () => {
+        scheduleSave();
+        scheduleRender();
+    });
+}
+
+function attachCustomLabelListeners(item) {
+    const checkbox = item.querySelector('.activity-custom-label-toggle');
+    const labelInput = item.querySelector('.custom-label-input');
+    const showDatesCheckbox = item.querySelector('.activity-show-dates-toggle');
+
+    // Safety check: ensure all elements exist
+    if (!checkbox || !labelInput || !showDatesCheckbox) return;
+
+    checkbox.addEventListener('change', () => {
+        labelInput.style.display = checkbox.checked ? '' : 'none';
+        scheduleSave();
+        scheduleRender();
+    });
+
+    labelInput.addEventListener('input', () => {
+        scheduleSave();
+        scheduleRender();
+    });
+
+    showDatesCheckbox.addEventListener('change', () => {
         scheduleSave();
         scheduleRender();
     });
@@ -464,6 +516,7 @@ document.getElementById('addActivity').addEventListener('click', () => {
             <input type="date" class="activity-custom-start">
         </div>
         ${buildMilestoneRowHTML()}
+        ${buildCustomLabelRowHTML()}
     `;
 
     container.appendChild(item);
@@ -477,6 +530,7 @@ document.getElementById('addActivity').addEventListener('click', () => {
     item.querySelector('.activity-fte').addEventListener('input', () => updateFteHint(item));
     updateFteHint(item);
     attachMilestoneListeners(item);
+    attachCustomLabelListeners(item);
     scheduleSave();
 });
 
@@ -541,9 +595,13 @@ function generateTimeline() {
         const calendarDays = calendarDaysFromFte(workingDays, fte);
         const milestone = item.querySelector('.activity-milestone').checked;
         const milestoneEmoji = item.querySelector('.milestone-character-input').value.trim() || '⭐';
+        const milestoneDate = item.querySelector('.milestone-date-input').value;
+        const hasCustomLabel = item.querySelector('.activity-custom-label-toggle').checked;
+        const customLabel = item.querySelector('.custom-label-input').value.trim();
+        const showDates = item.querySelector('.activity-show-dates-toggle').checked;
 
         if (name && workingDays > 0) {
-            activities.push({ id, name, workingDays, fte, calendarDays, color, dependsOn: dependsOn || null, customStart: customStart || null, milestone, milestoneEmoji, start: null, end: null });
+            activities.push({ id, name, workingDays, fte, calendarDays, color, dependsOn: dependsOn || null, customStart: customStart || null, milestone, milestoneEmoji, milestoneDate, hasCustomLabel, customLabel, showDates, start: null, end: null });
         }
     });
 
@@ -1104,17 +1162,36 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 .style('opacity', 0.85);
         });
 
-        // Milestone emoji — rendered after the bar's right edge
+        // Milestone emoji — rendered at the specified milestone date or after the bar's right edge
         if (d.milestone) {
-            const endX = xScale(d3ParseDate(d.end)) + oneDayWidth + 4;
-            const midY = yScale(i) + yScale.bandwidth() / 2;
-            barGroup.append('text')
-                .attr('x', endX)
-                .attr('y', midY)
-                .attr('dominant-baseline', 'middle')
-                .style('font-size', '28px')
-                .style('pointer-events', 'none')
-                .text(d.milestoneEmoji || '⭐');
+            let milestoneX;
+            let shouldRenderMilestone = true;
+            
+            if (d.milestoneDate) {
+                // Use the custom milestone date
+                const milestoneDate = d3ParseDate(d.milestoneDate);
+                if (milestoneDate >= minDate && milestoneDate <= maxDate) {
+                    milestoneX = xScale(milestoneDate) + oneDayWidth / 2;
+                } else {
+                    // Milestone date is out of visible range, skip rendering milestone
+                    shouldRenderMilestone = false;
+                }
+            } else {
+                // Default: render after the bar's right edge
+                milestoneX = xScale(d3ParseDate(d.end)) + oneDayWidth + 4;
+            }
+            
+            if (shouldRenderMilestone) {
+                const midY = yScale(i) + yScale.bandwidth() / 2;
+                barGroup.append('text')
+                    .attr('x', milestoneX)
+                    .attr('y', midY)
+                    .attr('text-anchor', 'middle')
+                    .attr('dominant-baseline', 'middle')
+                    .style('font-size', '28px')
+                    .style('pointer-events', 'none')
+                    .text(d.milestoneEmoji || '⭐');
+            }
         }
     });
 
@@ -1125,7 +1202,12 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
         .attr('dominant-baseline', 'middle')
         .style('font-size', '11px').style('fill', d => getContrastColor(d.color))
         .style('font-weight', 'bold').style('pointer-events', 'none')
-        .text(d => `${d.workingDays} wd × ${d.fte} FTE = ${d.calendarDays} days`);
+        .text(d => {
+            if (d.hasCustomLabel) {
+                return d.customLabel || '';
+            }
+            return `${d.workingDays} wd × ${d.fte} FTE = ${d.calendarDays} days`;
+        });
 
     bars.append('text')
         .attr('x', d => xScale(d3ParseDate(d.start)) + 5)
@@ -1133,7 +1215,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
         .attr('dominant-baseline', 'middle')
         .style('font-size', '10px').style('fill', d => getContrastColor(d.color))
         .style('pointer-events', 'none')
-        .text(d => `${d.start} → ${d.end}`);
+        .text(d => d.showDates ? `${d.start} → ${d.end}` : '');
 
     ganttChart = { activities, svg, xScale, yScale };
 }
@@ -1236,6 +1318,10 @@ function collectProjectData() {
             color: item.querySelector('.activity-color').value,
             milestone: item.querySelector('.activity-milestone').checked,
             milestoneEmoji: item.querySelector('.milestone-character-input').value.trim() || '⭐',
+            milestoneDate: item.querySelector('.milestone-date-input').value,
+            hasCustomLabel: item.querySelector('.activity-custom-label-toggle').checked,
+            customLabel: item.querySelector('.custom-label-input').value.trim(),
+            showDates: item.querySelector('.activity-show-dates-toggle').checked,
         });
     });
 
@@ -1341,7 +1427,8 @@ function restoreProjectData(data, autoGenerate = true) {
                 <label>Custom Start Date:</label>
                 <input type="date" class="activity-custom-start" value="${escapeHtml(act.customStart || '')}">
             </div>
-            ${buildMilestoneRowHTML(!!act.milestone, act.milestoneEmoji || '🏁')}
+            ${buildMilestoneRowHTML(!!act.milestone, act.milestoneEmoji || '🏁', act.milestoneDate || '')}
+            ${buildCustomLabelRowHTML(!!act.hasCustomLabel, act.customLabel || '', act.showDates !== false)}
         `;
         container.appendChild(item);
 
@@ -1349,6 +1436,7 @@ function restoreProjectData(data, autoGenerate = true) {
         item.querySelector('.activity-fte').addEventListener('input', () => updateFteHint(item));
         updateFteHint(item);
         attachMilestoneListeners(item);
+        attachCustomLabelListeners(item);
     });
 
     updateDependencyDropdowns();
