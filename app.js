@@ -554,9 +554,10 @@ function generateTimeline() {
         const calendarDays = calendarDaysFromFte(workingDays, fte);
         const milestone = item.querySelector('.activity-milestone').checked;
         const milestoneEmoji = item.querySelector('.milestone-character-input').value.trim() || '⭐';
+        const milestoneDate = item.querySelector('.milestone-date-input').value;
 
         if (name && workingDays > 0) {
-            activities.push({ id, name, workingDays, fte, calendarDays, color, dependsOn: dependsOn || null, customStart: customStart || null, milestone, milestoneEmoji, start: null, end: null });
+            activities.push({ id, name, workingDays, fte, calendarDays, color, dependsOn: dependsOn || null, customStart: customStart || null, milestone, milestoneEmoji, milestoneDate, start: null, end: null });
         }
     });
 
