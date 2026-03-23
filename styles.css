@@ -1017,3 +1017,26 @@ body.dark .instructions li {
     border-color: var(--border-input-focus);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
+
+.milestone-date-row {
+    margin-top: 0;
+}
+
+.milestone-date-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.3s;
+}
+
+.milestone-date-input:focus {
+    outline: none;
+    border-color: var(--border-input-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}

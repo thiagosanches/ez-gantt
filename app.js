@@ -397,30 +397,43 @@ function updateDependencyDropdowns() {
 // ---------------------------------------------------------------------------
 // Milestone character input
 // ---------------------------------------------------------------------------
-function buildMilestoneRowHTML(isMilestone = false, character = '⭐') {
+function buildMilestoneRowHTML(isMilestone = false, character = '⭐', milestoneDate = '') {
     return `
         <div class="form-group milestone-row">
             <label class="milestone-toggle-label">
                 <input type="checkbox" class="activity-milestone"${isMilestone ? ' checked' : ''}> Milestone
             </label>
             <input type="text" class="milestone-character-input" value="${character}" maxlength="2" placeholder="⭐" ${isMilestone ? '' : 'style="display:none;"'}>
+        </div>
+        <div class="form-group milestone-date-row" ${isMilestone ? '' : 'style="display:none;"'}>
+            <label>Milestone Date:</label>
+            <input type="date" class="milestone-date-input" value="${milestoneDate}">
         </div>`;
 }
 
 function attachMilestoneListeners(item) {
     const checkbox = item.querySelector('.activity-milestone');
     const charInput = item.querySelector('.milestone-character-input');
+    const dateInput = item.querySelector('.milestone-date-input');
+    const dateRow = item.querySelector('.milestone-date-row');
 
-    // Safety check: ensure both elements exist
-    if (!checkbox || !charInput) return;
+    // Safety check: ensure all elements exist
+    if (!checkbox || !charInput || !dateInput || !dateRow) return;
 
     checkbox.addEventListener('change', () => {
-        charInput.style.display = checkbox.checked ? '' : 'none';
+        const isChecked = checkbox.checked;
+        charInput.style.display = isChecked ? '' : 'none';
+        dateRow.style.display = isChecked ? '' : 'none';
         scheduleSave();
         scheduleRender();
     });
 
     charInput.addEventListener('input', () => {
+        scheduleSave();
+        scheduleRender();
+    });
+
+    dateInput.addEventListener('change', () => {
         scheduleSave();
         scheduleRender();
     });
@@ -1104,12 +1117,25 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 .style('opacity', 0.85);
         });
 
-        // Milestone emoji — rendered after the bar's right edge
+        // Milestone emoji — rendered at the specified milestone date or after the bar's right edge
         if (d.milestone) {
-            const endX = xScale(d3ParseDate(d.end)) + oneDayWidth + 4;
+            let milestoneX;
+            if (d.milestoneDate) {
+                // Use the custom milestone date
+                const milestoneDate = d3ParseDate(d.milestoneDate);
+                if (milestoneDate >= xDomain[0] && milestoneDate <= xDomain[1]) {
+                    milestoneX = xScale(milestoneDate) + oneDayWidth / 2;
+                } else {
+                    // Milestone date is out of visible range, skip rendering
+                    return;
+                }
+            } else {
+                // Default: render after the bar's right edge
+                milestoneX = xScale(d3ParseDate(d.end)) + oneDayWidth + 4;
+            }
             const midY = yScale(i) + yScale.bandwidth() / 2;
             barGroup.append('text')
-                .attr('x', endX)
+                .attr('x', milestoneX)
                 .attr('y', midY)
                 .attr('dominant-baseline', 'middle')
                 .style('font-size', '28px')
@@ -1236,6 +1262,7 @@ function collectProjectData() {
             color: item.querySelector('.activity-color').value,
             milestone: item.querySelector('.activity-milestone').checked,
             milestoneEmoji: item.querySelector('.milestone-character-input').value.trim() || '⭐',
+            milestoneDate: item.querySelector('.milestone-date-input').value,
         });
     });
 
@@ -1341,7 +1368,7 @@ function restoreProjectData(data, autoGenerate = true) {
                 <label>Custom Start Date:</label>
                 <input type="date" class="activity-custom-start" value="${escapeHtml(act.customStart || '')}">
             </div>
-            ${buildMilestoneRowHTML(!!act.milestone, act.milestoneEmoji || '🏁')}
+            ${buildMilestoneRowHTML(!!act.milestone, act.milestoneEmoji || '🏁', act.milestoneDate || '')}
         `;
         container.appendChild(item);
 
