@@ -1002,13 +1002,15 @@ body.dark .instructions li {
 
 .milestone-inputs-row {
     display: flex;
+    flex-direction: row;
     gap: 8px;
     align-items: center;
     margin-top: 0;
 }
 
 .milestone-character-input {
-    width: 50px;
+    width: 45px;
+    flex-shrink: 0;
     padding: 6px 9px;
     border: 1px solid var(--border-input);
     border-radius: 6px;
@@ -1028,7 +1030,7 @@ body.dark .instructions li {
 
 .milestone-date-input {
     flex: 1;
-    min-width: 150px;
+    min-width: 0;
     padding: 6px 9px;
     border: 1px solid var(--border-input);
     border-radius: 6px;
