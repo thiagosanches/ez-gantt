@@ -1142,6 +1142,7 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
                 barGroup.append('text')
                     .attr('x', milestoneX)
                     .attr('y', midY)
+                    .attr('text-anchor', 'middle')
                     .attr('dominant-baseline', 'middle')
                     .style('font-size', '28px')
                     .style('pointer-events', 'none')
