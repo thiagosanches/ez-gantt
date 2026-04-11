@@ -1,5 +1,7 @@
 # ez-gantt
 
+[![Run Unit Tests](https://github.com/thiagosanches/ez-gantt/actions/workflows/test.yml/badge.svg)](https://github.com/thiagosanches/ez-gantt/actions/workflows/test.yml)
+
 An interactive project management tool that helps Project Managers build Gantt chart timelines with automatic working day calculations, dependency management, and visual timeline rendering.
 
 <https://thiagosanches.github.io/ez-gantt/>
