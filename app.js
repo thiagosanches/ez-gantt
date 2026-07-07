@@ -660,7 +660,25 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
     const monthBandEven = weekBandEven;
 
     // Extra top margin for the two-row axis header (week row + month row)
-    const margin = { top: 60, right: 40, bottom: 80, left: 200 };
+    // Dynamically compute left margin so long activity names are never clipped.
+    // Use an off-screen SVG text element so getComputedTextLength() measures with
+    // the actual page fonts (including loaded web fonts) rather than a canvas
+    // fallback that may not have web fonts applied yet.
+    const _tmpSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    _tmpSvg.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;pointer-events:none;';
+    document.body.appendChild(_tmpSvg);
+    const _tmpText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    _tmpText.style.fontSize = '14px';
+    _tmpText.style.fontWeight = '500';
+    _tmpSvg.appendChild(_tmpText);
+    const maxNameWidth = activities.reduce((max, act) => {
+        _tmpText.textContent = act.name;
+        const w = _tmpText.getComputedTextLength();
+        return w > max ? w : max;
+    }, 0);
+    document.body.removeChild(_tmpSvg);
+    // +30px: 10px for the x=-10 text-anchor gap + 20px safety buffer
+    const margin = { top: 60, right: 40, bottom: 80, left: Math.max(200, Math.ceil(maxNameWidth) + 30) };
     const containerWidth = container.clientWidth - margin.left - margin.right;
     const height = Math.max(400, activities.length * 60 + 100);
 
@@ -1223,16 +1241,49 @@ function renderGanttChart(projectName, projectStart, projectEnd, activities) {
 // ---------------------------------------------------------------------------
 // Export PNG
 // ---------------------------------------------------------------------------
-document.getElementById('exportPng').addEventListener('click', () => {
+document.getElementById('exportPng').addEventListener('click', async () => {
     const svgEl = document.querySelector('#ganttChart svg');
     if (!svgEl) return;
 
     // Clone the SVG so we can safely mutate it without affecting the page
     const svgClone = svgEl.cloneNode(true);
 
-    // Inject a <style> block into the SVG that embeds the same font stack used
-    // by the page. Without this, the browser's SVG→canvas rasterizer falls back
-    // to its built-in generic sans-serif font and ignores inherited CSS.
+    // Embed the page's web fonts as base64 @font-face rules so the isolated
+    // SVG blob renderer (which cannot fetch external resources) uses the same
+    // typefaces as the live HTML page. Without this, the browser falls back to
+    // a system font that may lack certain weights (e.g. 500) and substitute a
+    // heavier or wider glyph set, clipping long activity-name labels in the PNG.
+    let embeddedFontCSS = '';
+    try {
+        const FONTS_URL =
+            'https://fonts.googleapis.com/css2?'
+            + 'family=Instrument+Sans:wght@400;500;600;700'
+            + '&family=Source+Sans+3:wght@400;500;600;700'
+            + '&display=swap';
+        const cssText = await (await fetch(FONTS_URL)).text();
+
+        // Collect unique font-file URLs, fetch them in parallel, base64-encode
+        const fontUrls = [...new Set(
+            [...cssText.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g)]
+            .map(([, u]) => u)
+        )];
+        const dataUrls = await Promise.all(fontUrls.map(async url => {
+            const blob = await (await fetch(url)).blob();
+            return new Promise(resolve => {
+                const fr = new FileReader();
+                fr.onload = () => resolve(fr.result);
+                fr.readAsDataURL(blob);
+            });
+        }));
+        let processed = cssText;
+        fontUrls.forEach((url, i) => {
+            processed = processed.replaceAll(`url(${url})`, `url('${dataUrls[i]}')`);
+        });
+        embeddedFontCSS = processed;
+    } catch (e) {
+        console.warn('PNG export: font embedding failed — text may render with a system font fallback.', e);
+    }
+
     const fontFamily = getComputedStyle(document.body).fontFamily;
     const computedStyle = getComputedStyle(document.documentElement);
     const axisTextColor  = computedStyle.getPropertyValue('--axis-text').trim()   || '#666666';
@@ -1240,6 +1291,7 @@ document.getElementById('exportPng').addEventListener('click', () => {
     const axisStrokeColor = computedStyle.getPropertyValue('--axis-stroke').trim() || '#999999';
     const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent = `
+        ${embeddedFontCSS}
         text { font-family: ${fontFamily}; }
         .x-axis text { font-size: 12px; fill: ${axisTextColor}; }
         .grid line { stroke: ${gridLineColor}; stroke-opacity: 0.7; }
